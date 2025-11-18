@@ -18,6 +18,12 @@ const sequelize = new Sequelize({
   host: settings.dbHost,
   database: settings.dbName,
   port: settings.dbPort,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
 });
 
 export const verifySequelizeConnection = async () => {
