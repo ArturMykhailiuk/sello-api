@@ -9,10 +9,13 @@ import {
   Area,
   Category,
   Ingredient,
+  Item,
   Recipe,
+  Service,
   Testimonial,
   User,
   RecipeIngredient,
+  ServiceItem,
 } from "./sequelize.js";
 
 const seedsDirPath = path.resolve("db", "data");
@@ -32,6 +35,7 @@ const findUserId = (rawId, rawUsers, createdUsers) => {
 };
 
 const getRawIngredients = async () => await readRawSeedData("ingredients.json");
+const getRawItems = async () => await readRawSeedData("items.json");
 
 const findIngredientId = (rawId, rawIngredients, createdIngredients) => {
   const rawIngredient = rawIngredients.find(({ _id }) => _id === rawId);
@@ -40,6 +44,11 @@ const findIngredientId = (rawId, rawIngredients, createdIngredients) => {
     createdIngredients.find(({ name }) => name === rawIngredient.name)?.id ??
     null
   );
+};
+const findItemId = (rawId, rawItems, createdItems) => {
+  const rawItem = rawItems.find(({ _id }) => _id === rawId);
+  if (!rawItem) return null;
+  return createdItems.find(({ name }) => name === rawItem.name)?.id ?? null;
 };
 
 // Seeds
@@ -62,6 +71,14 @@ const seedCategories = async ({ transaction }) => {
 const seedIngredients = async ({ rawIngredients, transaction }) => {
   return await Ingredient.bulkCreate(
     rawIngredients.map(({ name, desc, img }) => ({ name, desc, imgURL: img }), {
+      transaction,
+    })
+  );
+};
+
+const seedItems = async ({ rawItems, transaction }) => {
+  return await Item.bulkCreate(
+    rawItems.map(({ name, desc, img }) => ({ name, desc, imgURL: img }), {
       transaction,
     })
   );
@@ -127,6 +144,66 @@ const seedRecipes = async ({
   });
 };
 
+const seedServices = async ({
+  rawUsers,
+  createdUsers,
+  areas,
+  categories,
+  createdItems,
+  rawItems,
+  transaction,
+}) => {
+  const data = await readRawSeedData("services.json");
+
+  const servicesToCreate = [];
+
+  for (const {
+    title,
+    category,
+    owner: { $oid },
+    area,
+    instructions,
+    description,
+    thumb,
+    time,
+    items,
+  } of data) {
+    const ownerId = findUserId($oid, rawUsers, createdUsers);
+    if (!ownerId) continue;
+
+    const areaId = areas.find(({ name }) => name === area)?.id ?? null;
+    if (!areaId) continue;
+
+    const categoryId =
+      categories.find(({ name }) => name === category)?.id ?? null;
+    if (!categoryId) continue;
+
+    const serviceItems = items
+      .map(({ id, measure }) => ({
+        itemId: findItemId(id, rawItems, createdItems),
+        measure,
+      }))
+      .filter(({ itemId }) => !!itemId);
+
+    servicesToCreate.push({
+      title,
+      instructions,
+      description,
+      thumb,
+      time: Number(time),
+      ownerId,
+      areaId,
+      categoryId,
+      serviceItems,
+    });
+  }
+
+  await Service.bulkCreate(servicesToCreate, {
+    include: [{ model: ServiceItem, as: "serviceItems" }],
+    transaction,
+  });
+};
+
 const seedTestimonials = async ({ rawUsers, createdUsers, transaction }) => {
   const data = await readRawSeedData("testimonials.json");
   const testimonialsData = data
@@ -154,6 +231,7 @@ const seedUsers = async ({ rawUsers, transaction }) => {
 const initDb = async () => {
   const rawUsers = await getRawUsers();
   const rawIngredients = await getRawIngredients();
+  const rawItems = await getRawItems();
 
   const transaction = await sequelize.transaction();
 
@@ -161,6 +239,7 @@ const initDb = async () => {
     const areas = await seedAreas({ transaction });
     const categories = await seedCategories({ transaction });
     const ingredients = await seedIngredients({ rawIngredients, transaction });
+    const items = await seedItems({ rawItems, transaction });
     const users = await seedUsers({ rawUsers, transaction });
 
     await seedTestimonials({ rawUsers, createdUsers: users, transaction });
@@ -171,6 +250,16 @@ const initDb = async () => {
       categories,
       rawIngredients,
       createdIngredients: ingredients,
+      transaction,
+    });
+
+    await seedServices({
+      rawUsers,
+      createdUsers: users,
+      areas,
+      categories,
+      rawItems,
+      createdItems: items,
       transaction,
     });
 

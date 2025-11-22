@@ -23,6 +23,10 @@ import {
   getAllIngredientsResponseSwagger,
 } from "./schemas/ingredientsSchemas.js";
 import {
+  getAllItemsQueryStringSwagger,
+  getAllItemsResponseSwagger,
+} from "./schemas/itemsSchemas.js";
+import {
   getRecipesQueryStringSwagger,
   getRecipesResponseSwagger,
   createRecipeBodySwagger,
@@ -32,6 +36,17 @@ import {
   getFavoriteRecipesResponseSwagger,
   addFavoriteRecipeResponseSwagger,
 } from "./schemas/recipesSchemas.js";
+import {
+  getServicesQueryStringSwagger,
+  getServicesResponseSwagger,
+  createServiceBodySwagger,
+  createServiceResponseSwagger,
+  getServiceByIdResponseSwagger,
+  getPopularServicesResponseSwagger,
+  getFavoriteServicesResponseSwagger,
+  addFavoriteServiceResponseSwagger,
+} from "./schemas/servicesSchemas.js";
+
 import { getAllTestimonialsResponseSwagger } from "./schemas/testimonialSchema.js";
 import {
   followToUserResponseSwagger,
@@ -53,7 +68,7 @@ const errorResponseOptions = {
 export const swaggerOptions = {
   openapi: "3.0.0",
   info: {
-    title: "Foodies API",
+    title: "SELL-O API",
     version: "1.0.0",
   },
   servers: [{ url: settings.apiURL }],
@@ -183,6 +198,21 @@ export const swaggerOptions = {
         },
       },
     },
+    "/api/items": {
+      get: {
+        tags: ["Items"],
+        parameters: formatSwaggerQuerySchema(getAllItemsQueryStringSwagger),
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: getAllItemsResponseSwagger,
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/recipes": {
       get: {
         tags: ["Recipes"],
@@ -233,6 +263,56 @@ export const swaggerOptions = {
         },
       },
     },
+    "/api/services": {
+      get: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        parameters: formatSwaggerQuerySchema(getServicesQueryStringSwagger),
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: getServicesResponseSwagger,
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                ...createServiceBodySwagger,
+                properties: {
+                  ...createServiceBodySwagger.properties,
+                  thumb: {
+                    type: "string",
+                    format: "binary",
+                    description: "The file to upload",
+                  },
+                },
+                required: [...createServiceBodySwagger.required, "thumb"],
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            content: {
+              "application/json": {
+                schema: createServiceResponseSwagger,
+              },
+            },
+          },
+          400: errorResponseOptions,
+          401: errorResponseOptions,
+        },
+      },
+    },
     "/api/recipes/{recipeId}": {
       get: {
         tags: ["Recipes"],
@@ -261,6 +341,45 @@ export const swaggerOptions = {
         },
       },
     },
+    "/api/services/{serviceId}": {
+      get: {
+        tags: ["Services"],
+        parameters: [
+          {
+            name: "serviceId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+            description: "Service ID",
+          },
+        ],
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: getServiceByIdResponseSwagger,
+              },
+            },
+          },
+          400: errorResponseOptions,
+          404: errorResponseOptions,
+        },
+      },
+      delete: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        responses: {
+          204: {
+            content: {},
+          },
+          400: errorResponseOptions,
+          401: errorResponseOptions,
+          404: errorResponseOptions,
+        },
+      },
+    },
     "/api/recipes/popular": {
       get: {
         tags: ["Recipes"],
@@ -270,6 +389,21 @@ export const swaggerOptions = {
             content: {
               "application/json": {
                 schema: getPopularRecipesResponseSwagger,
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/services/popular": {
+      get: {
+        tags: ["Services"],
+        parameters: formatSwaggerQuerySchema(paginationSwagger),
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: getPopularServicesResponseSwagger,
               },
             },
           },
@@ -286,6 +420,23 @@ export const swaggerOptions = {
             content: {
               "application/json": {
                 schema: getFavoriteRecipesResponseSwagger,
+              },
+            },
+          },
+          401: errorResponseOptions,
+        },
+      },
+    },
+    "/api/services/favorites": {
+      get: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        parameters: formatSwaggerQuerySchema(paginationSwagger),
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: getFavoriteServicesResponseSwagger,
               },
             },
           },
@@ -318,6 +469,40 @@ export const swaggerOptions = {
             content: {
               "application/json": {
                 schema: addFavoriteRecipeResponseSwagger,
+              },
+            },
+          },
+          400: errorResponseOptions,
+          401: errorResponseOptions,
+          404: errorResponseOptions,
+        },
+      },
+    },
+    "/api/services/favorites/{serviceId}": {
+      post: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: addFavoriteServiceResponseSwagger,
+              },
+            },
+          },
+          400: errorResponseOptions,
+          401: errorResponseOptions,
+          404: errorResponseOptions,
+        },
+      },
+      delete: {
+        tags: ["Services"],
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            content: {
+              "application/json": {
+                schema: addFavoriteServiceResponseSwagger,
               },
             },
           },
