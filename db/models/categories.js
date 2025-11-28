@@ -13,6 +13,10 @@ export class Category extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
+        thumb: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
       },
       {
         sequelize,

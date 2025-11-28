@@ -3,91 +3,106 @@
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8a"
     },
-    "name": "Medical"
+    "name": "Medical",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/medical.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8b"
     },
-    "name": "Automotive"
+    "name": "Automotive",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/automotive.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8c"
     },
-    "name": "Education"
+    "name": "Education",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/education.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8d"
     },
-    "name": "Technology"
+    "name": "Technology",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/technology.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8e"
     },
-    "name": "Juridical"
+    "name": "Juridical",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/juridical.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8f"
     },
-    "name": "Beauty"
+    "name": "Beauty",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/beauty.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f90"
     },
-    "name": "Finance"
+    "name": "Finance",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/finance.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f91"
     },
-    "name": "Household"
+    "name": "Household",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/household.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f92"
     },
-    "name": "Real Estate"
+    "name": "Real Estate",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/realestate.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f93"
     },
-    "name": "Miscellaneous"
+    "name": "Miscellaneous",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/miscellaneous.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f94"
     },
-    "name": "Transportation"
+    "name": "Transportation",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/transportation.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f95"
     },
-    "name": "Childcare"
+    "name": "Childcare",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/childcare.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f96"
     },
-    "name": "Creative"
+    "name": "Creative",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/creative.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f97"
     },
-    "name": "Tourism"
+    "name": "Tourism",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/tourism.png"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f98"
     },
-    "name": "Consulting"
+    "name": "Consulting",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/consulting.png"
   }
 ]
 

@@ -63,7 +63,7 @@ const seedAreas = async ({ transaction }) => {
 const seedCategories = async ({ transaction }) => {
   const data = await readRawSeedData("categories.json");
   return await Category.bulkCreate(
-    data.map(({ name }) => ({ name })),
+    data.map(({ name, thumb }) => ({ name, thumb })),
     { transaction }
   );
 };
