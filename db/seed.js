@@ -10,12 +10,11 @@ import {
   Category,
   Ingredient,
   Item,
-  Recipe,
   Service,
   Testimonial,
   User,
-  RecipeIngredient,
   ServiceItem,
+  AITemplate,
 } from "./sequelize.js";
 
 const seedsDirPath = path.resolve("db", "data");
@@ -82,66 +81,6 @@ const seedItems = async ({ rawItems, transaction }) => {
       transaction,
     })
   );
-};
-
-const seedRecipes = async ({
-  rawUsers,
-  createdUsers,
-  areas,
-  categories,
-  createdIngredients,
-  rawIngredients,
-  transaction,
-}) => {
-  const data = await readRawSeedData("recipes.json");
-
-  const recipesToCreate = [];
-
-  for (const {
-    title,
-    category,
-    owner: { $oid },
-    area,
-    instructions,
-    description,
-    thumb,
-    time,
-    ingredients,
-  } of data) {
-    const ownerId = findUserId($oid, rawUsers, createdUsers);
-    if (!ownerId) continue;
-
-    const areaId = areas.find(({ name }) => name === area)?.id ?? null;
-    if (!areaId) continue;
-
-    const categoryId =
-      categories.find(({ name }) => name === category)?.id ?? null;
-    if (!categoryId) continue;
-
-    const recipeIngredients = ingredients
-      .map(({ id, measure }) => ({
-        ingredientId: findIngredientId(id, rawIngredients, createdIngredients),
-        measure,
-      }))
-      .filter(({ ingredientId }) => !!ingredientId);
-
-    recipesToCreate.push({
-      title,
-      instructions,
-      description,
-      thumb,
-      time: Number(time),
-      ownerId,
-      areaId,
-      categoryId,
-      recipeIngredients,
-    });
-  }
-
-  await Recipe.bulkCreate(recipesToCreate, {
-    include: [{ model: RecipeIngredient, as: "recipeIngredients" }],
-    transaction,
-  });
 };
 
 const seedServices = async ({
@@ -228,6 +167,29 @@ const seedUsers = async ({ rawUsers, transaction }) => {
   return await User.bulkCreate(userData, { transaction });
 };
 
+const seedAITemplates = async ({ transaction }) => {
+  const data = await readRawSeedData("aiTemplates.json");
+
+  // data is now an array of templates
+  const templates = Array.isArray(data) ? data : [data];
+
+  const templatesToCreate = templates.map(({ name, ...aiTemplate }) => ({
+    name,
+    aiTemplate,
+  }));
+
+  // Delete existing templates first to avoid duplicates
+  await AITemplate.destroy({ where: {}, transaction });
+
+  const created = await AITemplate.bulkCreate(templatesToCreate, {
+    transaction,
+  });
+
+  console.log(`Seeded ${created.length} AI templates`);
+
+  return created;
+};
+
 const initDb = async () => {
   const rawUsers = await getRawUsers();
   const rawIngredients = await getRawIngredients();
@@ -241,17 +203,9 @@ const initDb = async () => {
     const ingredients = await seedIngredients({ rawIngredients, transaction });
     const items = await seedItems({ rawItems, transaction });
     const users = await seedUsers({ rawUsers, transaction });
+    const aiTemplates = await seedAITemplates({ transaction });
 
     await seedTestimonials({ rawUsers, createdUsers: users, transaction });
-    await seedRecipes({
-      rawUsers,
-      createdUsers: users,
-      areas,
-      categories,
-      rawIngredients,
-      createdIngredients: ingredients,
-      transaction,
-    });
 
     await seedServices({
       rawUsers,

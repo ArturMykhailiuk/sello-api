@@ -1,4 +1,5 @@
 import { DataTypes, Model } from "sequelize";
+import { encrypt, decrypt } from "../../helpers/encryption.js";
 
 export class User extends Model {
   static initModel(sequelize) {
@@ -30,6 +31,40 @@ export class User extends Model {
           type: DataTypes.STRING,
           allowNull: true,
         },
+        n8nApiKey: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          get() {
+            const encryptedKey = this.getDataValue("n8nApiKey");
+            // Check for null, undefined, or empty string
+            if (!encryptedKey || encryptedKey.trim() === "") {
+              return null;
+            }
+            try {
+              return decrypt(encryptedKey);
+            } catch (error) {
+              console.error("Error decrypting n8nApiKey:", error.message);
+              // If decryption fails, return null to avoid breaking the app
+              return null;
+            }
+          },
+          set(value) {
+            if (value) {
+              this.setDataValue("n8nApiKey", encrypt(value));
+            } else {
+              this.setDataValue("n8nApiKey", null);
+            }
+          },
+        },
+        n8nUserId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        n8nEnabled: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        },
       },
       {
         sequelize,
@@ -41,7 +76,8 @@ export class User extends Model {
   }
 
   static associate(sequelize) {
-    const { Recipe, UserFollower, UserFavoriteRecipe } = sequelize.models;
+    const { Service, UserFollower, UserFavoriteService, WorkflowAITemplate } =
+      sequelize.models;
 
     User.belongsToMany(User, {
       through: UserFollower,
@@ -57,16 +93,21 @@ export class User extends Model {
       otherKey: "followerId",
     });
 
-    User.belongsToMany(Recipe, {
-      through: UserFavoriteRecipe,
-      as: "favoriteRecipes",
+    User.belongsToMany(Service, {
+      through: UserFavoriteService,
+      as: "favoriteServices",
       foreignKey: "userId",
-      otherKey: "recipeId",
+      otherKey: "serviceId",
     });
 
-    User.hasMany(Recipe, {
-      as: "recipes",
+    User.hasMany(Service, {
+      as: "services",
       foreignKey: "ownerId",
+    });
+
+    User.hasMany(WorkflowAITemplate, {
+      as: "aiWorkflows",
+      foreignKey: "userId",
     });
   }
 }

@@ -57,3 +57,9 @@ usersRouter.get(
   validateQueryString(paginationSchema),
   usersControllers.getFollowers
 );
+
+usersRouter.get(
+  "/me/ai-workflows",
+  authenticate,
+  usersControllers.getUserAIWorkflows
+);

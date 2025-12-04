@@ -1,0 +1,655 @@
+[
+  {
+    "name": "Telegram AI Bot",
+    "nodes": [
+      {
+        "parameters": {
+          "updates": [
+            "channel_post",
+            "callback_query",
+            "inline_query",
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -1184,
+          304
+        ],
+        "id": "5ecbaeaf-7dc8-49c9-893a-7dada9547b2a",
+        "name": "Telegram Trigger",
+        "webhookId": "1eda4184-2148-4d02-aa48-f779c0d81cf3",
+        "credentials": {
+          "telegramApi": {
+            "id": "K40NITvxPXmxdBhD",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "fileId": "={{ $json.message.voice.file_id }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          -736,
+          112
+        ],
+        "id": "d1800f72-496c-4bda-b64d-04c1746ef96d",
+        "name": "Get a file",
+        "webhookId": "15b99107-c774-4a1b-a72b-3122abc61105",
+        "credentials": {
+          "telegramApi": {
+            "id": "K40NITvxPXmxdBhD",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://api.telegram.org/file/bot8208135930:AAEgxcp6foVaBh_kfJaJ6lTGyO5Hw4HoRQk/{{$json[\"result\"][\"file_path\"]}}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -512,
+          112
+        ],
+        "id": "605e9327-1a06-4e61-a7dd-bdbac261d0c8",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.deepgram.com/v1/listen",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "model",
+                "value": "nova-2"
+              },
+              {
+                "name": "language",
+                "value": "uk"
+              },
+              {
+                "name": "punctuate",
+                "value": "true"
+              },
+              {
+                "name": "smart_format",
+                "value": "true"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Token 83d8e905d5145e341e6058b5b27bee0d243dd365"
+              },
+              {
+                "name": "Content-Type",
+                "value": "audio/mp4"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -288,
+          112
+        ],
+        "id": "2a614e57-35b4-4e83-8b0a-b829192258ed",
+        "name": "HTTP Request1"
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $json.output.chatId }}",
+          "text": "={{ $json.output.output || $json.results.channels[0].alternatives[0].transcript}}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          624,
+          304
+        ],
+        "id": "cd4309d9-f0ed-47ba-a127-0ec967886d04",
+        "name": "Send a text message",
+        "webhookId": "56575804-f043-40be-af60-71cf64921058",
+        "credentials": {
+          "telegramApi": {
+            "id": "K40NITvxPXmxdBhD",
+            "name": "Telegram account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.message.voice }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "object",
+                        "operation": "exists",
+                        "singleValue": true
+                      },
+                      "id": "ce32fa30-3b35-48f2-b015-42e1634bdabd"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "voice"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "256afc5e-d464-4b56-8d88-b99e3d83dff4",
+                      "leftValue": "={{ $json.message.text }}",
+                      "rightValue": "",
+                      "operator": {
+                        "type": "string",
+                        "operation": "exists",
+                        "singleValue": true
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "text"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.3,
+        "position": [
+          -960,
+          304
+        ],
+        "id": "8fced0fb-3a62-4af3-ab99-0fc85c7e3b37",
+        "name": "Switch"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=The user (chatId: {{$json.message.chat.id}}) asked: {{$json.message.text}}. If you need to provide information about categories, use the HTTP Request2 tool to get the latest categories from the API and include them in your response. Use only name don't add any symbols,asteriks and don't use symbol /n.",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "You are a helpful assistant. When responding, you MUST include the chatId from the user message in your output. Extract the chatId value from the context and include it in your response along with your answer."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          0,
+          512
+        ],
+        "id": "cd2f841b-c15e-4a85-b588-3029e318c0a4",
+        "name": "AI Agent",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          400,
+          304
+        ],
+        "id": "6ec2f884-5f2b-4f56-99bc-78951b10d8ba",
+        "name": "Merge"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.results.channels[0].alternatives[0].transcript }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          0,
+          0
+        ],
+        "id": "8a0db5f4-fd6e-4d81-acd3-19e7bb8e999a",
+        "name": "AI Agent1",
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          0,
+          224
+        ],
+        "id": "62ef7110-22ea-4993-bc53-3f6a6e10c490",
+        "name": "Google Gemini Chat Voice Message",
+        "notesInFlow": false,
+        "credentials": {
+          "googlePalmApi": {
+            "id": "p1wWsEk6mccUBByt",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          736
+        ],
+        "id": "3a90af81-7e81-4a0d-a214-fd6254fa3549",
+        "name": "Google Gemini Chat Text Message",
+        "notesInFlow": false,
+        "credentials": {
+          "googlePalmApi": {
+            "id": "p1wWsEk6mccUBByt",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          128,
+          224
+        ],
+        "id": "4ffd2cb9-c615-4ad6-8826-7a8cb3ba6bdc",
+        "name": "Simple Memory1"
+      },
+      {
+        "parameters": {
+          "url": "https://sello-api.onrender.com/api/categories?page=1&limit=15",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "=accept",
+                "value": "=application/json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.3,
+        "position": [
+          240,
+          752
+        ],
+        "id": "9abaa232-7fcc-4e68-afc7-8c8ab8204781",
+        "name": "HTTP Request2"
+      },
+      {
+        "parameters": {
+          "schemaType": "manual",
+          "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"chatId\": {\n\t\t\t\"type\": \"number\",\n\t\t\t\"description\": \"The Telegram chat ID from the incoming message\"\n\t\t},\n\t\t\"output\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"The response message to send back to the user\"\n\t\t}\n\t}\n}"
+        },
+        "id": "cdb94acc-80ec-4768-953d-67a797a8866f",
+        "name": "Structured Output Parser",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          416,
+          704
+        ]
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.message.chat.id }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          96,
+          768
+        ],
+        "id": "cffd4a0a-ce22-4922-bca2-193709a78ad5",
+        "name": "Simple Memory"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get a file": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request1": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Get a file",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Send a text message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent1": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Voice Message": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Text Message": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory1": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "ce19fa80-2c02-4ced-9124-01a323e466eb",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "69229da1f698de5e2ef9b56681ec27ecfe01e46bf47560f860d0c8a06aca053d"
+    },
+    "id": "d1oyEGqf0WgcODvt",
+    "tags": []
+  },
+  {
+    "name": "AI Chat",
+    "nodes": [
+      {
+        "parameters": {
+          "public": true,
+          "mode": "hostedChat",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "e7b5b418-f3d3-41cc-957b-f2522f97e4ab",
+        "name": "When chat message received",
+        "webhookId": "{{webhookId}}"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.chatInput }}",
+          "hasOutputParser": false,
+          "options": {
+            "systemMessage": "={{$json.systemPrompt || '{{systemPrompt}}'}}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          200,
+          0
+        ],
+        "id": "ai-agent-node",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          200,
+          200
+        ],
+        "id": "google-gemini-node",
+        "name": "Google Gemini Chat Model",
+        "credentials": {
+          "googlePalmApi": {
+            "id": "p1wWsEk6mccUBByt",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('When chat message received').item.json.sessionId || 'default-session' }}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          350,
+          200
+        ],
+        "id": "memory-node",
+        "name": "Chat Memory"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Gemini Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "",
+    "meta": {
+      "instanceId": "69229da1f698de5e2ef9b56681ec27ecfe01e46bf47560f860d0c8a06aca053d"
+    },
+    "tags": []
+  }
+]

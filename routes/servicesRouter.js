@@ -2,6 +2,7 @@ import express from "express";
 
 import { validateQueryString } from "../middlewares/validateQueryString.js";
 import { servicesControllers } from "../controllers/servicesControllers.js";
+import { aiWorkflowsControllers } from "../controllers/aiWorkflowsControllers.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import { identifyUser } from "../middlewares/identifyUser.js";
 import { validateParams } from "../middlewares/validateParams.js";
@@ -14,6 +15,7 @@ import {
   createServiceBodySchema,
   deleteServiceParamsSchema,
 } from "../schemas/servicesSchemas.js";
+import { aiWorkflowsSchemas } from "../schemas/aiWorkflowsSchemas.js";
 import { paginationSchema } from "../schemas/commonSchemas.js";
 
 export const servicesRouter = express.Router();
@@ -72,4 +74,18 @@ servicesRouter.delete(
   authenticate,
   validateParams(updateFavoriteByIdSchema),
   servicesControllers.removeFavoriteService
+);
+
+// AI Workflows routes
+servicesRouter.get(
+  "/:serviceId/ai-workflows",
+  identifyUser,
+  aiWorkflowsControllers.getServiceAIWorkflows
+);
+
+servicesRouter.post(
+  "/:serviceId/ai-workflows",
+  authenticate,
+  validateBody(aiWorkflowsSchemas.createAIWorkflowSchema),
+  aiWorkflowsControllers.createAIWorkflow
 );

@@ -52,8 +52,15 @@ export class Service extends Model {
   }
 
   static associate(sequelize) {
-    const { Category, User, Area, Item, ServiceItem, UserFavoriteService } =
-      sequelize.models;
+    const {
+      Category,
+      User,
+      Area,
+      Item,
+      ServiceItem,
+      UserFavoriteService,
+      WorkflowAITemplate,
+    } = sequelize.models;
 
     Service.belongsTo(Category, {
       foreignKey: "categoryId",
@@ -92,6 +99,11 @@ export class Service extends Model {
     Service.hasMany(UserFavoriteService, {
       foreignKey: "serviceId",
       as: "userFavoriteServices",
+    });
+
+    Service.hasMany(WorkflowAITemplate, {
+      foreignKey: "serviceId",
+      as: "aiWorkflows",
     });
   }
 }

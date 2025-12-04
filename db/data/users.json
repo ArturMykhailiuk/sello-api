@@ -13,7 +13,7 @@
     "_id": {
       "$oid": "64c8d958249fae54bae90bb8"
     },
-    "name": "Foodies user",
+    "name": "SELL-O user",
     "avatar": null,
     "email": "user@gmail.com",
     "followers": [],

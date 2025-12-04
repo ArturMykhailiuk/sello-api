@@ -12,9 +12,9 @@ const getUserByIdResponseSchema = Joi.object({
       name: Joi.string(),
       email: Joi.string().example("example@gmail.com"),
       avatarURL: Joi.string(),
-      recipesCount: Joi.number(),
+      servicesCount: Joi.number(),
       followersCount: Joi.number(),
-      favoriteRecipesCount: Joi.number().optional(),
+      favoriteServicesCount: Joi.number().optional(),
       followingCount: Joi.number().optional(),
       isFollowed: Joi.boolean().optional(),
     }),
@@ -51,13 +51,13 @@ const userResponseSchema = Joi.object({
   id: Joi.number().example(1),
   name: Joi.string(),
   avatarURL: Joi.string(),
-  recipes: Joi.array().items(
+  services: Joi.array().items(
     Joi.object({
       id: Joi.number().example(1),
       thumb: Joi.string().uri(),
     })
   ),
-  recipesCount: Joi.number(),
+  servicesCount: Joi.number(),
 });
 
 const gatFollowersResponseSchema = Joi.object({

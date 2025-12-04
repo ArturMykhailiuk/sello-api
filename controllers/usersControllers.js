@@ -61,6 +61,14 @@ const unFollowUser = async (req, res) => {
   res.status(200).json({ data: { message: "The user has been unfollowed" } });
 };
 
+const getUserAIWorkflows = async (req, res) => {
+  const { id: userId } = req.user;
+
+  const workflows = await usersServices.getUserAIWorkflows(userId);
+
+  res.status(200).json({ workflows });
+};
+
 export const usersControllers = {
   getUserById: ctrlWrapper(getUserById),
   updateAvatar: ctrlWrapper(updateAvatar),
@@ -68,4 +76,5 @@ export const usersControllers = {
   getFollowing: ctrlWrapper(getFollowing),
   followUser: ctrlWrapper(followUser),
   unFollowUser: ctrlWrapper(unFollowUser),
+  getUserAIWorkflows: ctrlWrapper(getUserAIWorkflows),
 };

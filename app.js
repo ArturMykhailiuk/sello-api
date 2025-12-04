@@ -10,10 +10,12 @@ import { authRouter } from "./routes/authRouter.js";
 import { categoriesRouter } from "./routes/categoriesRouter.js";
 import { ingredientsRouter } from "./routes/ingredientsRouter.js";
 import { itemsRouter } from "./routes/itemsRouter.js";
-import { recipesRouter } from "./routes/recipesRouter.js";
 import { servicesRouter } from "./routes/servicesRouter.js";
 import { testimonialsRouter } from "./routes/testimonialsRouter.js";
 import { usersRouter } from "./routes/usersRouter.js";
+import { workflowsRouter } from "./routes/workflowsRouter.js";
+import aiTemplatesRouter from "./routes/aiTemplatesRouter.js";
+import aiWorkflowsRouter from "./routes/aiWorkflowsRouter.js";
 import { sequelize, verifySequelizeConnection } from "./db/sequelize.js";
 import { settings } from "./settings.js";
 import { swaggerOptions } from "./swagger.js";
@@ -28,15 +30,17 @@ app.use("/api/static", express.static(staticPath));
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 
+app.use("/api/ai-templates", aiTemplatesRouter);
+app.use("/api/ai-workflows", aiWorkflowsRouter);
 app.use("/api/areas", areasRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/ingredients", ingredientsRouter);
 app.use("/api/items", itemsRouter);
-app.use("/api/recipes", recipesRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/workflows", workflowsRouter);
 
 app.get("/api/ok", (_, res) => {
   res.status(200).json({ message: "ok" });

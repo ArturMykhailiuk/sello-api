@@ -2,7 +2,14 @@ import { Op } from "sequelize";
 
 import { HttpError } from "../helpers/HttpError.js";
 import { getOffset } from "../helpers/getOffset.js";
-import { sequelize, User, Recipe, UserFollower } from "../db/sequelize.js";
+import {
+  sequelize,
+  User,
+  UserFollower,
+  Service,
+  WorkflowAITemplate,
+  AITemplate,
+} from "../db/sequelize.js";
 import { filesServices } from "./filesServices.js";
 
 const getCountFuncByColumn = (col) => {
@@ -14,7 +21,8 @@ const getUserById = async (userId, currentUser) => {
 
   const privateAttributes = isOwnProfile
     ? [
-        [getCountFuncByColumn("favoriteRecipes.id"), "favoriteRecipesCount"],
+        [getCountFuncByColumn("favoriteServices.id"), "favoriteServicesCount"],
+        [getCountFuncByColumn("aiWorkflows.id"), "aiWorkflowsCount"],
         [getCountFuncByColumn("following.id"), "followingCount"],
       ]
     : [];
@@ -22,9 +30,14 @@ const getUserById = async (userId, currentUser) => {
   const privateInclude = isOwnProfile
     ? [
         {
-          model: Recipe,
-          as: "favoriteRecipes",
+          model: Service,
+          as: "favoriteServices",
           through: { attributes: [] },
+          attributes: [],
+        },
+        {
+          model: WorkflowAITemplate,
+          as: "aiWorkflows",
           attributes: [],
         },
         {
@@ -40,8 +53,8 @@ const getUserById = async (userId, currentUser) => {
     User.findByPk(userId, {
       include: [
         {
-          model: Recipe,
-          as: "recipes",
+          model: Service,
+          as: "services",
           attributes: [],
         },
         {
@@ -57,11 +70,18 @@ const getUserById = async (userId, currentUser) => {
         "name",
         "email",
         "avatarURL",
-        [getCountFuncByColumn("recipes.id"), "recipesCount"],
+        "n8nEnabled",
+        [getCountFuncByColumn("services.id"), "servicesCount"],
         [getCountFuncByColumn("followers.id"), "followersCount"],
         ...privateAttributes,
       ],
-      group: ["User.id"],
+      group: [
+        "User.id",
+        "User.name",
+        "User.email",
+        "User.avatarURL",
+        "User.n8nEnabled",
+      ],
     }),
     isOwnProfile
       ? Promise.resolve(null)
@@ -74,10 +94,13 @@ const getUserById = async (userId, currentUser) => {
 
   return {
     ...userJson,
-    recipesCount: Number(userJson.recipesCount),
+    servicesCount: Number(userJson.servicesCount),
     followersCount: Number(userJson.followersCount),
-    favoriteRecipesCount: userJson.favoriteRecipesCount
-      ? Number(userJson.favoriteRecipesCount)
+    favoriteServicesCount: userJson.favoriteServicesCount
+      ? Number(userJson.favoriteServicesCount)
+      : undefined,
+    aiWorkflowsCount: userJson.aiWorkflowsCount
+      ? Number(userJson.aiWorkflowsCount)
       : undefined,
     followingCount: userJson.followingCount
       ? Number(userJson.followingCount)
@@ -125,13 +148,6 @@ const getUserConnections = async ({ type, userId, query, currentUser }) => {
           attributes: [],
           where: { id: userId },
         },
-        {
-          model: Recipe,
-          as: "recipes",
-          foreignKey: "ownerId",
-          attributes: ["id", "thumb"],
-          limit: 4,
-        },
         ...(isFollowers
           ? [
               {
@@ -161,28 +177,14 @@ const getUserConnections = async ({ type, userId, query, currentUser }) => {
     UserFollower.count({ where: countWhere }),
   ]);
 
-  const recipes = await Recipe.findAll({
-    where: {
-      ownerId: { [Op.in]: users.map(({ id }) => id) },
-    },
-    attributes: ["ownerId", [getCountFuncByColumn("id"), "recipesCount"]],
-    group: ["ownerId"],
-    raw: true,
-  });
-
   const key = isFollowers ? "followers" : "following";
 
   return {
     [key]: users.map((user) => {
       const { followers, ...userJSON } = user.toJSON();
 
-      const recipesCount = recipes.find(
-        ({ ownerId }) => ownerId === userJSON.id
-      )?.recipesCount;
-
       return {
         ...userJSON,
-        recipesCount: recipesCount ? Number(recipesCount) : 0,
         isFollowed: isFollowers ? followers?.length > 0 : undefined,
       };
     }),
@@ -242,6 +244,40 @@ const unFollowUser = async (userId, followId) => {
   await user.removeFollowing(unFollowUser);
 };
 
+const getUserAIWorkflows = async (userId) => {
+  // Get all services owned by the user
+  const services = await Service.findAll({
+    where: { ownerId: userId },
+    attributes: ["id"],
+  });
+
+  const serviceIds = services.map((s) => s.id);
+
+  if (serviceIds.length === 0) {
+    return [];
+  }
+
+  // Get all AI workflows for user's services
+  const workflows = await WorkflowAITemplate.findAll({
+    where: { serviceId: { [Op.in]: serviceIds } },
+    include: [
+      {
+        model: AITemplate,
+        as: "aiTemplate",
+        attributes: ["id", "name", "description", "icon"],
+      },
+      {
+        model: Service,
+        as: "service",
+        attributes: ["id", "title", "thumb"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return workflows.map((w) => w.toJSON());
+};
+
 export const usersServices = {
   getUserById,
   updateUserAvatar,
@@ -249,4 +285,5 @@ export const usersServices = {
   getFollowing,
   followUser,
   unFollowUser,
+  getUserAIWorkflows,
 };

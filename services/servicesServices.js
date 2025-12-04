@@ -7,6 +7,8 @@ import {
   Category,
   Item,
   ServiceItem,
+  WorkflowAITemplate,
+  AITemplate,
 } from "../db/sequelize.js";
 import { getOffset } from "../helpers/getOffset.js";
 import { HttpError } from "../helpers/HttpError.js";
@@ -129,6 +131,25 @@ const getServiceById = async (serviceId, user) => {
           as: "serviceItem",
           attributes: ["measure"],
         },
+      },
+      {
+        model: WorkflowAITemplate,
+        as: "aiWorkflows",
+        attributes: [
+          "id",
+          "name",
+          "systemPrompt",
+          "webhookUrl",
+          "isActive",
+          "createdAt",
+        ],
+        include: [
+          {
+            model: AITemplate,
+            as: "aiTemplate",
+            attributes: ["id", "name"],
+          },
+        ],
       },
     ],
   });

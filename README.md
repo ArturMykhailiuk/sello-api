@@ -1,4 +1,4 @@
-# 🍽️ Foodies API
+# 🍽️ SELL-O API
 
 ## 🚀 Getting Started
 

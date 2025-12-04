@@ -32,13 +32,6 @@ export class Ingredient extends Model {
   }
 
   static associate(sequelize) {
-    const { Recipe, RecipeIngredient } = sequelize.models;
-
-    Ingredient.belongsToMany(Recipe, {
-      through: RecipeIngredient,
-      foreignKey: "ingredientId",
-      as: "recipes",
-      otherKey: "recipeId",
-    });
+    // No associations for Ingredient model
   }
 }

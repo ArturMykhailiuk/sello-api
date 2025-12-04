@@ -5,7 +5,7 @@ import sharp from "sharp";
 
 const fileCategories = {
   avatars: "avatars",
-  recipes: "recipes",
+  services: "services",
 };
 
 const staticDir = path.join(process.cwd(), "public");
@@ -44,12 +44,12 @@ const processAvatar = async (file) => {
   return await processImage(file, fileCategories.avatars);
 };
 
-const processRecipeThumb = async (file) => {
-  return await processImage(file, fileCategories.recipes);
+const processServiceThumb = async (file) => {
+  return await processImage(file, fileCategories.services);
 };
 
 export const filesServices = {
   removeFile,
   processAvatar,
-  processRecipeThumb,
+  processServiceThumb,
 };

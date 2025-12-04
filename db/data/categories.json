@@ -4,105 +4,105 @@
       "$oid": "6462a6cd4c3d0ddd28897f8a"
     },
     "name": "Medical",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/medical.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/medical.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8b"
     },
     "name": "Automotive",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/automotive.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/automotive.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8c"
     },
     "name": "Education",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/education.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/education.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8d"
     },
     "name": "Technology",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/technology.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/technology.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8e"
     },
     "name": "Juridical",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/juridical.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/juridical.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f8f"
     },
     "name": "Beauty",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/beauty.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/beauty.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f90"
     },
     "name": "Finance",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/finance.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/finance.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f91"
     },
     "name": "Household",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/household.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/household.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f92"
     },
     "name": "Real Estate",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/realestate.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/realestate.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f93"
     },
     "name": "Miscellaneous",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/miscellaneous.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/miscellaneous.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f94"
     },
     "name": "Transportation",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/transportation.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/transportation.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f95"
     },
     "name": "Childcare",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/childcare.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/childcare.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f96"
     },
     "name": "Creative",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/creative.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/creative.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f97"
     },
     "name": "Tourism",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/tourism.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/tourism.webp"
   },
   {
     "_id": {
       "$oid": "6462a6cd4c3d0ddd28897f98"
     },
     "name": "Consulting",
-    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/consulting.png"
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/consulting.webp"
   }
 ]
 
