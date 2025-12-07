@@ -21,6 +21,7 @@ N8N_PROMPT_GENERATION_WEBHOOK=https://sell-o.shop/n8n/webhook/generate-prompt
 Створіть новий workflow у n8n з такими характеристиками:
 
 **Вхідні дані (POST request):**
+
 ```json
 {
   "assistantType": "AI Chat",
@@ -29,6 +30,7 @@ N8N_PROMPT_GENERATION_WEBHOOK=https://sell-o.shop/n8n/webhook/generate-prompt
 ```
 
 **Вихідні дані (response):**
+
 ```json
 {
   "systemPrompt": "Згенерований системний промпт..."
@@ -71,12 +73,14 @@ const systemPrompt = `You are a helpful ${assistantType} assistant for service #
 **POST** `/api/ai-workflows/generate-prompt`
 
 **Headers:**
+
 ```
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "assistantType": "AI Chat",
@@ -85,6 +89,7 @@ Content-Type: application/json
 ```
 
 **Response (200):**
+
 ```json
 {
   "systemPrompt": "You are a helpful AI Chat assistant..."
@@ -92,6 +97,7 @@ Content-Type: application/json
 ```
 
 **Response (404):**
+
 ```json
 {
   "message": "Service not found"
@@ -99,6 +105,7 @@ Content-Type: application/json
 ```
 
 **Response (500):**
+
 ```json
 {
   "message": "Prompt generation workflow is not configured. Please set N8N_PROMPT_GENERATION_WEBHOOK environment variable."
@@ -115,7 +122,7 @@ const { assistantType, serviceId } = $input.item.json;
 
 let systemPrompt = "";
 
-switch(assistantType) {
+switch (assistantType) {
   case "AI Chat":
     systemPrompt = `You are a customer support chatbot for service ${serviceId}...`;
     break;
@@ -135,14 +142,17 @@ return { systemPrompt };
 ## Troubleshooting
 
 ### Помилка "Prompt generation workflow is not configured"
+
 - Перевірте наявність `N8N_PROMPT_GENERATION_WEBHOOK` у `.env`
 - Переконайтесь, що webhook URL правильний
 
 ### Timeout під час генерації
+
 - У `n8nService.js` налаштований timeout 60 секунд
 - Якщо потрібно більше - збільште `timeout` у axios конфігурації
 
 ### Генерація не спрацьовує
+
 - Перевірте browser console для помилок
 - Перевірте network tab - чи відправляється запит
 - Перевірте backend logs - чи отримується запит

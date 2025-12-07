@@ -366,7 +366,7 @@ const generatePrompt = ctrlWrapper(async (req, res) => {
 
   // Get the prompt generation webhook URL from environment or settings
   const promptGenerationWebhook = process.env.N8N_PROMPT_GENERATION_WEBHOOK;
-  
+
   if (!promptGenerationWebhook) {
     throw HttpError(
       500,

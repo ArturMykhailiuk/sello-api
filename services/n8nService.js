@@ -543,12 +543,13 @@ const generateSystemPrompt = async (webhookUrl, assistantType, serviceId) => {
 
     // Extract the generated prompt from the response
     // The structure depends on your n8n workflow output
-    const generatedPrompt = response.data?.systemPrompt || response.data?.prompt || response.data;
-    
+    const generatedPrompt =
+      response.data?.systemPrompt || response.data?.prompt || response.data;
+
     if (typeof generatedPrompt === "string") {
       return generatedPrompt;
     }
-    
+
     // If response is an object, try to extract text
     if (typeof generatedPrompt === "object" && generatedPrompt.text) {
       return generatedPrompt.text;
@@ -556,10 +557,15 @@ const generateSystemPrompt = async (webhookUrl, assistantType, serviceId) => {
 
     throw new Error("Invalid response format from prompt generation workflow");
   } catch (error) {
-    console.error("Error generating system prompt:", error.response?.data || error.message);
+    console.error(
+      "Error generating system prompt:",
+      error.response?.data || error.message
+    );
     throw HttpError(
       error.response?.status || 500,
-      error.response?.data?.message || error.message || "Failed to generate system prompt"
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to generate system prompt"
     );
   }
 };
