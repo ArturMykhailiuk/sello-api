@@ -7,7 +7,7 @@ import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
  */
 const getAllAITemplates = ctrlWrapper(async (req, res) => {
   const templates = await AITemplate.findAll({
-    attributes: ["id", "name", "createdAt", "updatedAt"],
+    attributes: ["id", "name", "formConfig", "createdAt", "updatedAt"],
     order: [["name", "ASC"]],
   });
 

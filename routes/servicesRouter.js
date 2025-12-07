@@ -13,6 +13,8 @@ import {
   getServicesQueryStringSchema,
   getServiceByIdParamsSchema,
   createServiceBodySchema,
+  updateServiceBodySchema,
+  updateServiceParamsSchema,
   deleteServiceParamsSchema,
 } from "../schemas/servicesSchemas.js";
 import { aiWorkflowsSchemas } from "../schemas/aiWorkflowsSchemas.js";
@@ -33,6 +35,15 @@ servicesRouter.post(
   validateBody(createServiceBodySchema),
   imageUpload.single("thumb"),
   servicesControllers.createService
+);
+
+servicesRouter.patch(
+  "/:serviceId",
+  authenticate,
+  validateParams(updateServiceParamsSchema),
+  validateBody(updateServiceBodySchema),
+  imageUpload.single("thumb"),
+  servicesControllers.updateService
 );
 
 servicesRouter.get(

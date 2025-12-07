@@ -176,6 +176,38 @@ const seedAITemplates = async ({ transaction }) => {
   const templatesToCreate = templates.map(({ name, ...aiTemplate }) => ({
     name,
     aiTemplate,
+    formConfig: {
+      fields: [
+        {
+          id: "name",
+          type: "text",
+          label: "Назва ассистента",
+          placeholder: "наприклад, Асистент підтримки клієнтів",
+          required: true,
+          validation: {
+            minLength: 3,
+            maxLength: 100,
+            errorMessage: "Name must be between 3 and 100 characters",
+          },
+        },
+        {
+          id: "systemPrompt",
+          type: "textarea",
+          label: "Системний промпт",
+          placeholder:
+            "Визначте роль і поведінку штучного інтелекту. Приклад: Ви — корисний асистент служби підтримки для маркетплейсу локальних послуг. Допомагайте клієнтам знаходити відповідних постачальників послуг, відповідайте на запитання про послуги та надавайте дружню підтримку.",
+          required: true,
+          rows: 6,
+          validation: {
+            minLength: 10,
+            maxLength: 2000,
+            errorMessage:
+              "System prompt must be between 10 and 2000 characters",
+          },
+          hint: "The system prompt defines how your AI assistant will behave and respond to users.",
+        },
+      ],
+    },
   }));
 
   // Delete existing templates first to avoid duplicates

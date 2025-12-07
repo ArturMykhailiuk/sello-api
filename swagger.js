@@ -25,6 +25,8 @@ import {
 import {
   getAllItemsQueryStringSwagger,
   getAllItemsResponseSwagger,
+  createItemSwagger,
+  createItemResponseSwagger,
 } from "./schemas/itemsSchemas.js";
 import {
   getServicesQueryStringSwagger,
@@ -200,6 +202,29 @@ export const swaggerOptions = {
               },
             },
           },
+        },
+      },
+      post: {
+        tags: ["Items"],
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: createItemSwagger,
+            },
+          },
+        },
+        responses: {
+          201: {
+            content: {
+              "application/json": {
+                schema: createItemResponseSwagger,
+              },
+            },
+          },
+          400: errorResponseOptions,
+          401: errorResponseOptions,
         },
       },
     },

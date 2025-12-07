@@ -7,6 +7,12 @@ const getAllItems = async (req, res) => {
   res.status(200).json({ data: { total, items } });
 };
 
+const createItem = async (req, res) => {
+  const item = await itemsServices.createItem(req.body);
+  res.status(201).json({ data: { item } });
+};
+
 export const itemsControllers = {
   getAllItems: ctrlWrapper(getAllItems),
+  createItem: ctrlWrapper(createItem),
 };

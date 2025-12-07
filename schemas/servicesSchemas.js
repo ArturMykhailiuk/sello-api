@@ -115,6 +115,24 @@ export const deleteServiceParamsSchema = Joi.object({
   serviceId: Joi.number().integer().required(),
 });
 
+export const updateServiceParamsSchema = Joi.object({
+  serviceId: Joi.number().integer().required(),
+});
+
+export const updateServiceBodySchema = Joi.object({
+  title: Joi.string().trim().max(100).optional(),
+  categoryId: Joi.number().integer().optional(),
+  areaId: Joi.number().integer().optional(),
+  description: Joi.string().trim().max(200).optional(),
+  instructions: Joi.string().trim().max(200).optional(),
+  time: Joi.number().integer().optional(),
+  items: Joi.array().items(itemSchema).min(1).optional(),
+});
+
+export const { swagger: updateServiceBodySwagger } = j2s(
+  updateServiceBodySchema
+);
+
 const serviceSchema = Joi.object({
   id: Joi.number().example(1),
   title: Joi.string(),

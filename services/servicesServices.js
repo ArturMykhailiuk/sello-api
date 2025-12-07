@@ -312,6 +312,62 @@ const createService = async ({ body, file, user }) => {
   return service;
 };
 
+const updateService = async ({ serviceId, body, file, user }) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const service = await Service.findByPk(serviceId, { transaction });
+    if (!service) throw HttpError(404, "Service not found");
+    if (service.ownerId !== user.id) throw HttpError(403);
+
+    const updateData = { ...body };
+
+    // Process new image if uploaded
+    if (file) {
+      const oldThumb = service.thumb;
+      const newThumb = await filesServices.processServiceThumb(file);
+      updateData.thumb = newThumb;
+      // Remove old image after successful upload
+      if (oldThumb) {
+        await filesServices.removeFile(oldThumb);
+      }
+    }
+
+    // Update items if provided
+    if (body.items) {
+      const serviceItems = JSON.parse(body.items).map(({ id, measure }) => ({
+        itemId: id,
+        measure,
+      }));
+
+      // Delete old items
+      await ServiceItem.destroy({
+        where: { serviceId },
+        transaction,
+      });
+
+      // Create new items
+      await ServiceItem.bulkCreate(
+        serviceItems.map((item) => ({ ...item, serviceId })),
+        { transaction }
+      );
+
+      delete updateData.items;
+    }
+
+    // Update service fields
+    await service.update(updateData, { transaction });
+
+    await transaction.commit();
+
+    // Return updated service with associations
+    return getServiceById(serviceId, user);
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
 const deleteServiceById = async (serviceId, user) => {
   const transaction = await sequelize.transaction();
 
@@ -337,5 +393,6 @@ export const servicesServices = {
   removeFavorite,
   getUserFavoriteServices,
   createService,
+  updateService,
   deleteServiceById,
 };

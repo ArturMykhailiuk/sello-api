@@ -486,6 +486,84 @@ const activateWorkflow = async (apiKey, workflowId, active = true) => {
   }
 };
 
+/**
+ * Update a workflow in n8n
+ * @param {string} apiKey - User's n8n API key
+ * @param {string} workflowId - Workflow ID
+ * @param {Object} workflowData - Updated workflow data (nodes, connections, settings, name)
+ * @returns {Promise<Object>}
+ */
+const updateWorkflow = async (apiKey, workflowId, workflowData) => {
+  try {
+    const response = await axios.put(
+      `${N8N_BASE_URL}/api/v1/workflows/${workflowId}`,
+      workflowData,
+      {
+        headers: {
+          "X-N8N-API-KEY": apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log(`Updated workflow with ID: ${workflowId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error updating workflow:", error.response?.data || error);
+    throw HttpError(
+      error.response?.status || 500,
+      error.response?.data?.message || "Failed to update workflow"
+    );
+  }
+};
+
+/**
+ * Call n8n workflow via webhook to generate system prompt
+ * @param {string} webhookUrl - Webhook URL of the prompt generation workflow
+ * @param {string} assistantType - Type of assistant (e.g., "AI Chat")
+ * @param {number} serviceId - Service ID for context
+ * @returns {Promise<string>} Generated system prompt
+ */
+const generateSystemPrompt = async (webhookUrl, assistantType, serviceId) => {
+  try {
+    const response = await axios.post(
+      webhookUrl,
+      {
+        assistantType,
+        serviceId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: 60000, // 60 second timeout for AI generation
+      }
+    );
+
+    // Extract the generated prompt from the response
+    // The structure depends on your n8n workflow output
+    const generatedPrompt = response.data?.systemPrompt || response.data?.prompt || response.data;
+    
+    if (typeof generatedPrompt === "string") {
+      return generatedPrompt;
+    }
+    
+    // If response is an object, try to extract text
+    if (typeof generatedPrompt === "object" && generatedPrompt.text) {
+      return generatedPrompt.text;
+    }
+
+    throw new Error("Invalid response format from prompt generation workflow");
+  } catch (error) {
+    console.error("Error generating system prompt:", error.response?.data || error.message);
+    throw HttpError(
+      error.response?.status || 500,
+      error.response?.data?.message || error.message || "Failed to generate system prompt"
+    );
+  }
+};
+
 export const n8nService = {
   createN8nUser,
   findUserByEmail,
@@ -496,6 +574,8 @@ export const n8nService = {
   getExecutions,
   getExecutionStatus,
   createWorkflow,
+  updateWorkflow,
   deleteWorkflow,
   activateWorkflow,
+  generateSystemPrompt,
 };

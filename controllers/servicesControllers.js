@@ -64,6 +64,16 @@ const createService = async (req, res) => {
   res.status(201).json({ data: { service } });
 };
 
+const updateService = async (req, res) => {
+  const service = await servicesServices.updateService({
+    serviceId: req.params.serviceId,
+    body: req.body,
+    file: req.file,
+    user: req.user,
+  });
+  res.status(200).json({ data: { service } });
+};
+
 const deleteServiceById = async (req, res) => {
   await servicesServices.deleteServiceById(req.params.serviceId, req.user);
   res.status(204).send();
@@ -77,5 +87,6 @@ export const servicesControllers = {
   addFavoriteService: ctrlWrapper(addFavoriteService),
   removeFavoriteService: ctrlWrapper(removeFavoriteService),
   createService: ctrlWrapper(createService),
+  updateService: ctrlWrapper(updateService),
   deleteServiceById: ctrlWrapper(deleteServiceById),
 };

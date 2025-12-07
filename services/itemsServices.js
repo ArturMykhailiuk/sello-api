@@ -22,6 +22,16 @@ const listItems = async (query) => {
   return { items: rows, total: count };
 };
 
+const createItem = async ({ name }) => {
+  const item = await Item.create({
+    name,
+    desc: "",
+    imgURL: "/items/default.jpg",
+  });
+  return item;
+};
+
 export const itemsServices = {
   listItems,
+  createItem,
 };

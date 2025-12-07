@@ -27,3 +27,23 @@ const getAllItemsResponseSchema = Joi.object({
 export const { swagger: getAllItemsResponseSwagger } = j2s(
   getAllItemsResponseSchema
 );
+
+export const createItemSchema = Joi.object({
+  name: Joi.string().required(),
+});
+
+export const { swagger: createItemSwagger } = j2s(createItemSchema);
+
+const createItemResponseSchema = Joi.object({
+  data: Joi.object({
+    item: Joi.object({
+      id: Joi.number().example(1),
+      name: Joi.string(),
+      imgURL: Joi.string(),
+    }),
+  }),
+});
+
+export const { swagger: createItemResponseSwagger } = j2s(
+  createItemResponseSchema
+);
