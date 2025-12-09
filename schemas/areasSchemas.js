@@ -18,6 +18,12 @@ const getAllAreasResponseSchema = Joi.object({
       Joi.object({
         id: Joi.number().example(1),
         name: Joi.string(),
+        latitude: Joi.number().optional(),
+        longitude: Joi.number().optional(),
+        formattedAddress: Joi.string().optional(),
+        city: Joi.string().optional(),
+        country: Joi.string().optional(),
+        street: Joi.string().optional(),
       })
     ),
   }),
@@ -25,4 +31,18 @@ const getAllAreasResponseSchema = Joi.object({
 
 export const { swagger: getAllAreasResponseSwagger } = j2s(
   getAllAreasResponseSchema
+);
+
+export const createOrUpdateAreaBodySchema = Joi.object({
+  name: Joi.string().trim().max(100).required(),
+  latitude: Joi.number().optional(),
+  longitude: Joi.number().optional(),
+  formattedAddress: Joi.string().trim().max(500).optional(),
+  city: Joi.string().trim().max(100).optional(),
+  country: Joi.string().trim().max(100).optional(),
+  street: Joi.string().trim().max(200).optional(),
+});
+
+export const { swagger: createOrUpdateAreaBodySwagger } = j2s(
+  createOrUpdateAreaBodySchema
 );

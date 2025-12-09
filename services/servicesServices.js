@@ -116,7 +116,7 @@ const getServiceById = async (serviceId, user) => {
       {
         model: Area,
         as: "area",
-        attributes: ["id", "name"],
+        attributes: ["id", "name", "formattedAddress", "latitude", "longitude"],
       },
       {
         model: Category,

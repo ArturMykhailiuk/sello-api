@@ -13,6 +13,30 @@ export class Area extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
+        latitude: {
+          type: DataTypes.DECIMAL(10, 8),
+          allowNull: true,
+        },
+        longitude: {
+          type: DataTypes.DECIMAL(11, 8),
+          allowNull: true,
+        },
+        formattedAddress: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        city: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        country: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        street: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
       },
       {
         sequelize,
