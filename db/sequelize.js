@@ -2,7 +2,6 @@ import { Sequelize } from "sequelize";
 
 import { Area } from "./models/areas.js";
 import { Category } from "./models/categories.js";
-import { Ingredient } from "./models/ingredients.js";
 import { Testimonial } from "./models/testimonials.js";
 import { User } from "./models/users.js";
 import { UserFavoriteService } from "./models/userFavoriteService.js";
@@ -12,6 +11,7 @@ import { settings } from "../settings.js";
 import { Service } from "./models/services.js";
 import { Item } from "./models/items.js";
 import { ServiceItem } from "./models/serviceItem.js";
+import { ServiceArea } from "./models/ServiceArea.js";
 import { AITemplate } from "./models/aiTemplates.js";
 import { WorkflowAITemplate } from "./models/workflowAITemplates.js";
 
@@ -41,12 +41,12 @@ export const verifySequelizeConnection = async () => {
 };
 
 ServiceItem.initModel(sequelize);
+ServiceArea.initModel(sequelize);
 UserFavoriteService.initModel(sequelize);
 UserFollower.initModel(sequelize);
 
 Area.initModel(sequelize);
 Category.initModel(sequelize);
-Ingredient.initModel(sequelize);
 Service.initModel(sequelize);
 Item.initModel(sequelize);
 Testimonial.initModel(sequelize);
@@ -54,8 +54,8 @@ User.initModel(sequelize);
 AITemplate.initModel(sequelize);
 WorkflowAITemplate.initModel(sequelize);
 
-Ingredient.associate(sequelize);
 Item.associate(sequelize);
+Area.associate(sequelize);
 Service.associate(sequelize);
 Testimonial.associate(sequelize);
 User.associate(sequelize);
@@ -66,12 +66,12 @@ export {
   sequelize,
   Area,
   Category,
-  Ingredient,
   Item,
   Service,
   Testimonial,
   User,
   ServiceItem,
+  ServiceArea,
   UserFavoriteService,
   UserFollower,
   AITemplate,

@@ -46,4 +46,20 @@ export class Area extends Model {
       }
     );
   }
+
+  static associate(sequelize) {
+    const { Service, ServiceArea } = sequelize.models;
+
+    Area.belongsToMany(Service, {
+      through: ServiceArea,
+      foreignKey: "areaId",
+      as: "services",
+      otherKey: "serviceId",
+    });
+
+    Area.hasMany(ServiceArea, {
+      foreignKey: "areaId",
+      as: "serviceAreas",
+    });
+  }
 }

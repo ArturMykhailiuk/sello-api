@@ -21,10 +21,6 @@ export class Service extends Model {
           type: DataTypes.INTEGER,
           allowNull: false,
         },
-        areaId: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
         instructions: {
           type: DataTypes.TEXT,
           allowNull: false,
@@ -58,6 +54,7 @@ export class Service extends Model {
       Area,
       Item,
       ServiceItem,
+      ServiceArea,
       UserFavoriteService,
       WorkflowAITemplate,
     } = sequelize.models;
@@ -72,9 +69,16 @@ export class Service extends Model {
       as: "owner",
     });
 
-    Service.belongsTo(Area, {
-      foreignKey: "areaId",
-      as: "area",
+    Service.belongsToMany(Area, {
+      through: ServiceArea,
+      foreignKey: "serviceId",
+      as: "areas",
+      otherKey: "areaId",
+    });
+
+    Service.hasMany(ServiceArea, {
+      foreignKey: "serviceId",
+      as: "serviceAreas",
     });
 
     Service.belongsToMany(Item, {

@@ -25,32 +25,16 @@ const createOrUpdateArea = async (locationData) => {
   const { name, latitude, longitude, formattedAddress, city, country, street } =
     locationData;
 
-  // Шукаємо існуючу area за координатами або назвою
+  // Шукаємо існуючу area за ТОЧНИМИ координатами
   let area = await Area.findOne({
     where: {
-      [Op.or]: [
-        { name },
-        {
-          latitude,
-          longitude,
-        },
-      ],
+      latitude,
+      longitude,
     },
   });
 
-  if (area) {
-    // Оновлюємо існуючу area
-    await area.update({
-      name,
-      latitude,
-      longitude,
-      formattedAddress,
-      city,
-      country,
-      street,
-    });
-  } else {
-    // Створюємо нову area
+  if (!area) {
+    // Створюємо нову area тільки якщо немає точного збігу координат
     area = await Area.create({
       name,
       latitude,
