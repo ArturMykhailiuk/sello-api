@@ -570,6 +570,131 @@ const generateSystemPrompt = async (webhookUrl, assistantType, serviceId) => {
   }
 };
 
+/**
+ * Create Telegram credentials in n8n
+ * @param {string} apiKey - User's n8n API key
+ * @param {string} token - Telegram bot token
+ * @param {string} botName - Name for the credentials (e.g., bot username)
+ * @returns {Promise<{id: string, name: string}>}
+ */
+const createTelegramCredentials = async (apiKey, token, botName) => {
+  try {
+    const response = await axios.post(
+      `${N8N_BASE_URL}/api/v1/credentials`,
+      {
+        name: botName || `Telegram Bot ${Date.now()}`,
+        type: "telegramApi",
+        data: {
+          accessToken: token,
+        },
+      },
+      {
+        headers: {
+          "X-N8N-API-KEY": apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const credentials = response.data.data || response.data;
+    console.log(`Created Telegram credentials with ID: ${credentials.id}`);
+
+    return {
+      id: credentials.id,
+      name: credentials.name,
+    };
+  } catch (error) {
+    console.error(
+      "Error creating Telegram credentials:",
+      error.response?.data || error
+    );
+    throw HttpError(
+      error.response?.status || 500,
+      error.response?.data?.message || "Failed to create Telegram credentials"
+    );
+  }
+};
+
+/**
+ * Delete credentials from n8n
+ * @param {string} apiKey - User's n8n API key
+ * @param {string} credentialsId - Credentials ID
+ * @returns {Promise<void>}
+ */
+const deleteCredentials = async (apiKey, credentialsId) => {
+  try {
+    await axios.delete(`${N8N_BASE_URL}/api/v1/credentials/${credentialsId}`, {
+      headers: {
+        "X-N8N-API-KEY": apiKey,
+      },
+    });
+
+    console.log(`Deleted credentials with ID: ${credentialsId}`);
+  } catch (error) {
+    console.error("Error deleting credentials:", error.response?.data || error);
+    // Don't throw error - credentials might already be deleted
+    console.warn(
+      `Could not delete credentials ${credentialsId}, may already be deleted`
+    );
+  }
+};
+
+/**
+ * Register Telegram bot webhook
+ * @param {string} botToken - Telegram bot token
+ * @param {string} webhookUrl - Webhook URL from n8n
+ * @returns {Promise<void>}
+ */
+const registerTelegramWebhook = async (botToken, webhookUrl) => {
+  try {
+    const response = await axios.post(
+      `https://api.telegram.org/bot${botToken}/setWebhook`,
+      {
+        url: webhookUrl,
+        drop_pending_updates: true,
+      }
+    );
+
+    if (response.data.ok) {
+      console.log(`Successfully registered Telegram webhook: ${webhookUrl}`);
+      return response.data;
+    } else {
+      throw new Error(response.data.description || "Failed to set webhook");
+    }
+  } catch (error) {
+    console.error(
+      "Error registering Telegram webhook:",
+      error.response?.data || error.message
+    );
+    throw HttpError(
+      error.response?.status || 500,
+      error.response?.data?.description ||
+        error.message ||
+        "Failed to register Telegram webhook"
+    );
+  }
+};
+
+/**
+ * Delete Telegram bot webhook
+ * @param {string} botToken - Telegram bot token
+ * @returns {Promise<void>}
+ */
+const deleteTelegramWebhook = async (botToken) => {
+  try {
+    await axios.post(`https://api.telegram.org/bot${botToken}/deleteWebhook`, {
+      drop_pending_updates: true,
+    });
+    console.log("Successfully deleted Telegram webhook");
+  } catch (error) {
+    console.error(
+      "Error deleting Telegram webhook:",
+      error.response?.data || error.message
+    );
+    // Don't throw - webhook might already be deleted
+  }
+};
+
 export const n8nService = {
   createN8nUser,
   findUserByEmail,
@@ -584,4 +709,8 @@ export const n8nService = {
   deleteWorkflow,
   activateWorkflow,
   generateSystemPrompt,
+  createTelegramCredentials,
+  deleteCredentials,
+  registerTelegramWebhook,
+  deleteTelegramWebhook,
 };

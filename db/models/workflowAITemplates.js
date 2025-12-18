@@ -60,6 +60,22 @@ export class WorkflowAITemplate extends Model {
           allowNull: true,
           comment: "n8n webhook URL for this AI assistant",
         },
+        telegramToken: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          comment: "Encrypted Telegram bot token (for Telegram AI Bot type)",
+        },
+        telegramBotUsername: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          comment: "Telegram bot username (for widget display)",
+        },
+        n8nCredentialsId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          comment:
+            "n8n credentials ID (for Telegram Bot or other integrations)",
+        },
         isActive: {
           type: DataTypes.BOOLEAN,
           allowNull: false,

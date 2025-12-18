@@ -38,9 +38,9 @@ export const createOrUpdateAreaBodySchema = Joi.object({
   latitude: Joi.number().optional(),
   longitude: Joi.number().optional(),
   formattedAddress: Joi.string().trim().max(500).optional(),
-  city: Joi.string().trim().max(100).optional(),
-  country: Joi.string().trim().max(100).optional(),
-  street: Joi.string().trim().max(200).optional(),
+  city: Joi.string().trim().max(100).allow("").optional(),
+  country: Joi.string().trim().max(100).allow("").optional(),
+  street: Joi.string().trim().max(200).allow("").optional(),
 });
 
 export const { swagger: createOrUpdateAreaBodySwagger } = j2s(

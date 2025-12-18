@@ -6,12 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { hashSecret } from "../helpers/hashing.js";
 import {
   sequelize,
-  Area,
   Category,
-  Ingredient,
-  Item,
   Service,
-  Testimonial,
   User,
   ServiceItem,
   AITemplate,
@@ -33,31 +29,7 @@ const findUserId = (rawId, rawUsers, createdUsers) => {
   return createdUsers.find(({ email }) => email === rawUser.email)?.id ?? null;
 };
 
-const getRawIngredients = async () => await readRawSeedData("ingredients.json");
-const getRawItems = async () => await readRawSeedData("items.json");
-
-const findIngredientId = (rawId, rawIngredients, createdIngredients) => {
-  const rawIngredient = rawIngredients.find(({ _id }) => _id === rawId);
-  if (!rawIngredient) return null;
-  return (
-    createdIngredients.find(({ name }) => name === rawIngredient.name)?.id ??
-    null
-  );
-};
-const findItemId = (rawId, rawItems, createdItems) => {
-  const rawItem = rawItems.find(({ _id }) => _id === rawId);
-  if (!rawItem) return null;
-  return createdItems.find(({ name }) => name === rawItem.name)?.id ?? null;
-};
-
 // Seeds
-const seedAreas = async ({ transaction }) => {
-  const data = await readRawSeedData("areas.json");
-  return await Area.bulkCreate(
-    data.map(({ name }) => ({ name })),
-    { transaction }
-  );
-};
 
 const seedCategories = async ({ transaction }) => {
   const data = await readRawSeedData("categories.json");
@@ -67,29 +39,10 @@ const seedCategories = async ({ transaction }) => {
   );
 };
 
-const seedIngredients = async ({ rawIngredients, transaction }) => {
-  return await Ingredient.bulkCreate(
-    rawIngredients.map(({ name, desc, img }) => ({ name, desc, imgURL: img }), {
-      transaction,
-    })
-  );
-};
-
-const seedItems = async ({ rawItems, transaction }) => {
-  return await Item.bulkCreate(
-    rawItems.map(({ name, desc, img }) => ({ name, desc, imgURL: img }), {
-      transaction,
-    })
-  );
-};
-
 const seedServices = async ({
   rawUsers,
   createdUsers,
-  areas,
   categories,
-  createdItems,
-  rawItems,
   transaction,
 }) => {
   const data = await readRawSeedData("services.json");
@@ -100,29 +53,17 @@ const seedServices = async ({
     title,
     category,
     owner: { $oid },
-    area,
     instructions,
     description,
     thumb,
     time,
-    items,
   } of data) {
     const ownerId = findUserId($oid, rawUsers, createdUsers);
     if (!ownerId) continue;
 
-    const areaId = areas.find(({ name }) => name === area)?.id ?? null;
-    if (!areaId) continue;
-
     const categoryId =
       categories.find(({ name }) => name === category)?.id ?? null;
     if (!categoryId) continue;
-
-    const serviceItems = items
-      .map(({ id, measure }) => ({
-        itemId: findItemId(id, rawItems, createdItems),
-        measure,
-      }))
-      .filter(({ itemId }) => !!itemId);
 
     servicesToCreate.push({
       title,
@@ -131,9 +72,7 @@ const seedServices = async ({
       thumb,
       time: Number(time),
       ownerId,
-      areaId,
       categoryId,
-      serviceItems,
     });
   }
 
@@ -141,17 +80,6 @@ const seedServices = async ({
     include: [{ model: ServiceItem, as: "serviceItems" }],
     transaction,
   });
-};
-
-const seedTestimonials = async ({ rawUsers, createdUsers, transaction }) => {
-  const data = await readRawSeedData("testimonials.json");
-  const testimonialsData = data
-    .map(({ testimonial, owner: { $oid: ownerId } }) => ({
-      testimonial,
-      ownerId: findUserId(ownerId, rawUsers, createdUsers),
-    }))
-    .filter(({ ownerId }) => !!ownerId);
-  return await Testimonial.bulkCreate(testimonialsData, { transaction });
 };
 
 const seedUsers = async ({ rawUsers, transaction }) => {
@@ -173,42 +101,77 @@ const seedAITemplates = async ({ transaction }) => {
   // data is now an array of templates
   const templates = Array.isArray(data) ? data : [data];
 
-  const templatesToCreate = templates.map(({ name, ...aiTemplate }) => ({
-    name,
-    aiTemplate,
-    formConfig: {
-      fields: [
+  const templatesToCreate = templates.map(({ name, ...aiTemplate }) => {
+    // Base fields for all templates
+    const baseFields = [
+      {
+        id: "name",
+        type: "text",
+        label: "Назва ассистента",
+        placeholder: "наприклад, Асистент підтримки клієнтів",
+        required: true,
+        validation: {
+          minLength: 3,
+          maxLength: 100,
+          errorMessage: "Name must be between 3 and 100 characters",
+        },
+      },
+      {
+        id: "systemPrompt",
+        type: "textarea",
+        label: "Системний промпт",
+        placeholder:
+          "Визначте роль і поведінку штучного інтелекту. Приклад: Ви — корисний асистент служби підтримки для маркетплейсу локальних послуг. Допомагайте клієнтам знаходити відповідних постачальників послуг, відповідайте на запитання про послуги та надавайте дружню підтримку.",
+        required: true,
+        rows: 6,
+        validation: {
+          minLength: 10,
+          maxLength: 2000,
+          errorMessage: "System prompt must be between 10 and 2000 characters",
+        },
+        hint: "The system prompt defines how your AI assistant will behave and respond to users.",
+      },
+    ];
+
+    // Add Telegram token field for Telegram AI Bot
+    const fields = [...baseFields];
+    if (name === "Telegram AI Bot") {
+      fields.push(
         {
-          id: "name",
+          id: "telegramToken",
           type: "text",
-          label: "Назва ассистента",
-          placeholder: "наприклад, Асистент підтримки клієнтів",
+          label: "Telegram Bot Token",
+          placeholder: "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
           required: true,
           validation: {
-            minLength: 3,
-            maxLength: 100,
-            errorMessage: "Name must be between 3 and 100 characters",
+            pattern: "^[0-9]+:[A-Za-z0-9_-]+$",
+            errorMessage:
+              "Invalid Telegram bot token format (expected: 123456:ABC-DEF...)",
           },
+          hint: "Отримайте токен від @BotFather in Telegram",
         },
         {
-          id: "systemPrompt",
-          type: "textarea",
-          label: "Системний промпт",
-          placeholder:
-            "Визначте роль і поведінку штучного інтелекту. Приклад: Ви — корисний асистент служби підтримки для маркетплейсу локальних послуг. Допомагайте клієнтам знаходити відповідних постачальників послуг, відповідайте на запитання про послуги та надавайте дружню підтримку.",
+          id: "telegramBotUsername",
+          type: "text",
+          label: "Telegram Bot Username",
+          placeholder: "my_awesome_bot",
           required: true,
-          rows: 6,
           validation: {
-            minLength: 10,
-            maxLength: 2000,
+            pattern: "^[a-zA-Z0-9_]{5,32}$",
             errorMessage:
-              "System prompt must be between 10 and 2000 characters",
+              "Invalid username format (5-32 characters, letters, numbers, underscores)",
           },
-          hint: "The system prompt defines how your AI assistant will behave and respond to users.",
-        },
-      ],
-    },
-  }));
+          hint: "Ім'я бота без @ (наприклад: my_bot)",
+        }
+      );
+    }
+
+    return {
+      name,
+      aiTemplate,
+      formConfig: { fields },
+    };
+  });
 
   // Delete existing templates first to avoid duplicates
   await AITemplate.destroy({ where: {}, transaction });
@@ -224,28 +187,18 @@ const seedAITemplates = async ({ transaction }) => {
 
 const initDb = async () => {
   const rawUsers = await getRawUsers();
-  const rawIngredients = await getRawIngredients();
-  const rawItems = await getRawItems();
 
   const transaction = await sequelize.transaction();
 
   try {
-    const areas = await seedAreas({ transaction });
     const categories = await seedCategories({ transaction });
-    const ingredients = await seedIngredients({ rawIngredients, transaction });
-    const items = await seedItems({ rawItems, transaction });
     const users = await seedUsers({ rawUsers, transaction });
     const aiTemplates = await seedAITemplates({ transaction });
-
-    await seedTestimonials({ rawUsers, createdUsers: users, transaction });
 
     await seedServices({
       rawUsers,
       createdUsers: users,
-      areas,
       categories,
-      rawItems,
-      createdItems: items,
       transaction,
     });
 

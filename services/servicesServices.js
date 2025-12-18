@@ -4,6 +4,7 @@ import {
   User,
   Service,
   Area,
+  ServiceArea,
   Category,
   Item,
   ServiceItem,
@@ -37,11 +38,31 @@ const getServices = async (
   const where = {};
   const include = [
     { model: User, as: "owner", attributes: ["id", "name", "avatarURL"] },
+    {
+      model: Area,
+      as: "areas",
+      through: { attributes: [] },
+      attributes: [
+        "id",
+        "name",
+        "latitude",
+        "longitude",
+        "formattedAddress",
+        "city",
+        "country",
+        "street",
+      ],
+    },
   ];
 
-  if (areaId) where.areaId = areaId;
   if (categoryId) where.categoryId = categoryId;
   if (ownerId) where.ownerId = ownerId;
+
+  // Filter by areaId using ServiceArea junction table
+  if (areaId) {
+    include[1].through = { where: { areaId }, attributes: [] };
+    include[1].required = true;
+  }
 
   if (itemId) {
     include.push({
@@ -105,7 +126,7 @@ const getServices = async (
 const getServiceById = async (serviceId, user) => {
   const service = await Service.findByPk(serviceId, {
     attributes: {
-      exclude: ["ownerId", "areaId", "categoryId"],
+      exclude: ["ownerId", "categoryId"],
     },
     include: [
       {
@@ -115,7 +136,8 @@ const getServiceById = async (serviceId, user) => {
       },
       {
         model: Area,
-        as: "area",
+        as: "areas",
+        through: { attributes: [] },
         attributes: ["id", "name", "formattedAddress", "latitude", "longitude"],
       },
       {
@@ -292,7 +314,7 @@ const createService = async ({ body, file, user }) => {
 
   const thumb = await filesServices.processServiceThumb(file);
 
-  const { items, ...otherData } = body;
+  const { items, areaIds, "areaIds[]": areaIdsArray, ...otherData } = body;
 
   const serviceItems = JSON.parse(items).map(({ id, measure }) => ({
     itemId: id,
@@ -309,6 +331,24 @@ const createService = async ({ body, file, user }) => {
     { include: [{ model: ServiceItem, as: "serviceItems" }] }
   );
 
+  // Create ServiceArea junction records for multiple locations
+  // Handle both areaIds and areaIds[] (from FormData)
+  const areaIdsToUse = areaIdsArray || areaIds;
+
+  if (
+    areaIdsToUse &&
+    (Array.isArray(areaIdsToUse) ? areaIdsToUse.length > 0 : areaIdsToUse)
+  ) {
+    const idsArray = Array.isArray(areaIdsToUse)
+      ? areaIdsToUse
+      : [areaIdsToUse];
+    const serviceAreas = idsArray.map((areaId) => ({
+      serviceId: service.id,
+      areaId: parseInt(areaId),
+    }));
+    await ServiceArea.bulkCreate(serviceAreas);
+  }
+
   return service;
 };
 
@@ -321,6 +361,11 @@ const updateService = async ({ serviceId, body, file, user }) => {
     if (service.ownerId !== user.id) throw HttpError(403);
 
     const updateData = { ...body };
+    const { areaIds, "areaIds[]": areaIdsArray } = body;
+
+    // Remove areaIds from updateData since it's not a direct field anymore
+    delete updateData.areaIds;
+    delete updateData["areaIds[]"];
 
     // Process new image if uploaded
     if (file) {
@@ -330,6 +375,33 @@ const updateService = async ({ serviceId, body, file, user }) => {
       // Remove old image after successful upload
       if (oldThumb) {
         await filesServices.removeFile(oldThumb);
+      }
+    }
+
+    // Update areaIds via ServiceArea junction table
+    // Handle both areaIds and areaIds[] (from FormData)
+    const areaIdsToUse = areaIdsArray || areaIds;
+
+    if (areaIdsToUse !== undefined) {
+      // Delete existing ServiceArea records
+      await ServiceArea.destroy({
+        where: { serviceId },
+        transaction,
+      });
+
+      // Create new ServiceArea records for multiple locations
+      if (
+        areaIdsToUse &&
+        (Array.isArray(areaIdsToUse) ? areaIdsToUse.length > 0 : areaIdsToUse)
+      ) {
+        const idsArray = Array.isArray(areaIdsToUse)
+          ? areaIdsToUse
+          : [areaIdsToUse];
+        const serviceAreas = idsArray.map((areaId) => ({
+          serviceId,
+          areaId: parseInt(areaId),
+        }));
+        await ServiceArea.bulkCreate(serviceAreas, { transaction });
       }
     }
 
