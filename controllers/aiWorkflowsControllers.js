@@ -3,6 +3,7 @@ import { AITemplate, WorkflowAITemplate, Service } from "../db/sequelize.js";
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 import { HttpError } from "../helpers/HttpError.js";
 import { n8nService } from "../services/n8nService.js";
+import { encrypt } from "../helpers/encryption.js";
 
 /**
  * Get all AI workflows for a specific service
@@ -39,7 +40,14 @@ const getServiceAIWorkflows = ctrlWrapper(async (req, res) => {
  */
 const createAIWorkflow = ctrlWrapper(async (req, res) => {
   const { serviceId } = req.params;
-  const { aiTemplateId, name, systemPrompt } = req.body;
+  const {
+    aiTemplateId,
+    name,
+    systemPrompt,
+    telegramToken,
+    telegramBotUsername,
+    ...restFields
+  } = req.body;
 
   // Validate required fields
   if (!aiTemplateId || !name || !systemPrompt) {
@@ -58,6 +66,22 @@ const createAIWorkflow = ctrlWrapper(async (req, res) => {
     throw HttpError(404, "AI template not found");
   }
 
+  // Check if Telegram token is required (for Telegram AI Bot template)
+  const isTelegramBot = aiTemplate.name === "Telegram AI Bot";
+  if (isTelegramBot && !telegramToken) {
+    throw HttpError(400, "telegramToken is required for Telegram AI Bot");
+  }
+  if (isTelegramBot && !telegramBotUsername) {
+    throw HttpError(400, "telegramBotUsername is required for Telegram AI Bot");
+  }
+
+  // Extract bot username from token for Telegram bots
+  let encryptedToken = null;
+  if (isTelegramBot && telegramToken) {
+    // Telegram token format: 123456789:ABCdefGHI...
+    encryptedToken = encrypt(telegramToken);
+  }
+
   // Clone the workflow template and substitute placeholders
   const workflowTemplate = JSON.parse(JSON.stringify(aiTemplate.aiTemplate));
 
@@ -65,7 +89,7 @@ const createAIWorkflow = ctrlWrapper(async (req, res) => {
   const webhookId = crypto.randomBytes(16).toString("hex");
   const webhookPath = `service-${serviceId}-${webhookId}`;
 
-  // Update webhook node
+  // Update webhook node (for AI Chat type)
   const webhookNode = workflowTemplate.nodes.find(
     (node) => node.type === "@n8n/n8n-nodes-langchain.chatTrigger"
   );
@@ -74,25 +98,62 @@ const createAIWorkflow = ctrlWrapper(async (req, res) => {
     webhookNode.webhookId = webhookId;
   }
 
-  // Replace {{systemPrompt}} placeholder in all nodes
-  const replaceSystemPrompt = (obj) => {
+  // For Telegram bots, update Telegram nodes with credentials
+  let telegramCredentialsId = null;
+  if (isTelegramBot && telegramToken) {
+    // Create Telegram credentials in n8n
+    const apiKey = n8nService.getAdminKey();
+    const credentialsName = `${
+      telegramBotUsername || "bot"
+    }_${serviceId}_${Date.now()}`;
+
+    const { id: credId } = await n8nService.createTelegramCredentials(
+      apiKey,
+      telegramToken,
+      credentialsName
+    );
+
+    telegramCredentialsId = credId;
+
+    // Update all Telegram nodes to use the new credentials
+    workflowTemplate.nodes.forEach((node) => {
+      if (
+        node.type === "n8n-nodes-base.telegram" ||
+        node.type === "n8n-nodes-base.telegramTrigger"
+      ) {
+        node.credentials = {
+          telegramApi: {
+            id: credId,
+            name: credentialsName,
+          },
+        };
+      }
+    });
+  }
+
+  // Replace {{systemPrompt}} and {{telegramToken}} placeholders in all nodes
+  const replacePlaceholders = (obj) => {
     if (typeof obj === "string") {
-      return obj.replace(/\{\{systemPrompt\}\}/g, systemPrompt);
+      let result = obj.replace(/\{\{systemPrompt\}\}/g, systemPrompt);
+      if (isTelegramBot && telegramToken) {
+        result = result.replace(/\{\{telegramToken\}\}/g, telegramToken);
+      }
+      return result;
     }
     if (Array.isArray(obj)) {
-      return obj.map(replaceSystemPrompt);
+      return obj.map(replacePlaceholders);
     }
     if (obj && typeof obj === "object") {
       const newObj = {};
       for (const key in obj) {
-        newObj[key] = replaceSystemPrompt(obj[key]);
+        newObj[key] = replacePlaceholders(obj[key]);
       }
       return newObj;
     }
     return obj;
   };
 
-  workflowTemplate.nodes = replaceSystemPrompt(workflowTemplate.nodes);
+  workflowTemplate.nodes = replacePlaceholders(workflowTemplate.nodes);
 
   // Prepare clean workflow data for n8n API (only required fields)
   const cleanWorkflowData = {
@@ -112,9 +173,23 @@ const createAIWorkflow = ctrlWrapper(async (req, res) => {
   // Activate the workflow
   await n8nService.activateWorkflow(apiKey, n8nWorkflowId, true);
 
-  // Save to database
-  const workflowAI = await WorkflowAITemplate.create({
-    userId: req.user.id, // Always set userId
+  // For Telegram bots, register webhook with Telegram
+  if (isTelegramBot && telegramToken && webhookUrl) {
+    try {
+      await n8nService.registerTelegramWebhook(telegramToken, webhookUrl);
+      console.log(
+        `Registered Telegram webhook for bot: ${telegramBotUsername}`
+      );
+    } catch (error) {
+      console.error("Failed to register Telegram webhook:", error);
+      // Don't fail the entire workflow creation if webhook registration fails
+      // The user can try to re-activate the workflow later
+    }
+  }
+
+  // Prepare database fields
+  const dbFields = {
+    userId: req.user.id,
     serviceId,
     aiTemplateId,
     name,
@@ -122,7 +197,17 @@ const createAIWorkflow = ctrlWrapper(async (req, res) => {
     n8nWorkflowId,
     webhookUrl,
     isActive: true,
-  });
+  };
+
+  // Add Telegram-specific fields if applicable
+  if (isTelegramBot && encryptedToken) {
+    dbFields.telegramToken = encryptedToken;
+    dbFields.telegramBotUsername = telegramBotUsername;
+    dbFields.n8nCredentialsId = telegramCredentialsId;
+  }
+
+  // Save to database
+  const workflowAI = await WorkflowAITemplate.create(dbFields);
 
   // Fetch with relations
   const createdWorkflow = await WorkflowAITemplate.findByPk(workflowAI.id, {
@@ -153,7 +238,24 @@ const deleteAIWorkflow = ctrlWrapper(async (req, res) => {
   // Delete from n8n
   try {
     const apiKey = n8nService.getAdminKey();
+
+    // Delete Telegram webhook if this is a Telegram bot
+    if (workflow.telegramToken) {
+      try {
+        const { decrypt } = await import("../helpers/encryption.js");
+        const decryptedToken = decrypt(workflow.telegramToken);
+        await n8nService.deleteTelegramWebhook(decryptedToken);
+      } catch (webhookError) {
+        console.error("Error deleting Telegram webhook:", webhookError);
+      }
+    }
+
     await n8nService.deleteWorkflow(apiKey, workflow.n8nWorkflowId);
+
+    // Delete credentials if exists (for Telegram bots)
+    if (workflow.n8nCredentialsId) {
+      await n8nService.deleteCredentials(apiKey, workflow.n8nCredentialsId);
+    }
   } catch (error) {
     console.error("Error deleting workflow from n8n:", error);
     // Continue with database deletion even if n8n deletion fails
@@ -185,6 +287,30 @@ const toggleAIWorkflow = ctrlWrapper(async (req, res) => {
     workflow.n8nWorkflowId,
     newActiveStatus
   );
+
+  // For Telegram bots, register/delete webhook
+  if (workflow.telegramToken) {
+    try {
+      const { decrypt } = await import("../helpers/encryption.js");
+      const decryptedToken = decrypt(workflow.telegramToken);
+
+      if (newActiveStatus && workflow.webhookUrl) {
+        // Register webhook when activating
+        await n8nService.registerTelegramWebhook(
+          decryptedToken,
+          workflow.webhookUrl
+        );
+        console.log(`Registered Telegram webhook for workflow ${workflow.id}`);
+      } else if (!newActiveStatus) {
+        // Delete webhook when deactivating
+        await n8nService.deleteTelegramWebhook(decryptedToken);
+        console.log(`Deleted Telegram webhook for workflow ${workflow.id}`);
+      }
+    } catch (webhookError) {
+      console.error("Error managing Telegram webhook:", webhookError);
+      // Don't fail the entire toggle operation
+    }
+  }
 
   // Update in database
   if (newActiveStatus) {

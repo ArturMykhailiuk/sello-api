@@ -11,7 +11,7 @@ import { settings } from "../settings.js";
 import { Service } from "./models/services.js";
 import { Item } from "./models/items.js";
 import { ServiceItem } from "./models/serviceItem.js";
-import { ServiceArea } from "./models/ServiceArea.js";
+import { ServiceArea } from "./models/serviceArea.js";
 import { AITemplate } from "./models/aiTemplates.js";
 import { WorkflowAITemplate } from "./models/workflowAITemplates.js";
 
