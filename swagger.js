@@ -172,7 +172,8 @@ export const swaggerOptions = {
       get: {
         tags: ["Auth"],
         summary: "Google OAuth callback",
-        description: "Handles Google OAuth callback and redirects to frontend with JWT token",
+        description:
+          "Handles Google OAuth callback and redirects to frontend with JWT token",
         parameters: [
           {
             name: "code",
@@ -192,7 +193,8 @@ export const swaggerOptions = {
                 description: "Frontend URL with token parameter",
                 schema: {
                   type: "string",
-                  example: "http://localhost:5173/auth/google/callback?token=eyJhbGc...",
+                  example:
+                    "http://localhost:5173/auth/google/callback?token=eyJhbGc...",
                 },
               },
             },

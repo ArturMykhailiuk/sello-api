@@ -28,9 +28,9 @@ authRouter.get(
 
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", { 
+  passport.authenticate("google", {
     session: false,
-    failureRedirect: "/login" 
+    failureRedirect: "/login",
   }),
   authControllers.googleCallback
 );
