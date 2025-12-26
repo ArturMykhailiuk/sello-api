@@ -103,7 +103,15 @@
     },
     "name": "Consulting",
     "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/consulting.webp"
+  },
+  {
+    "_id": {
+      "$oid": "6462a6cd4c3d0ddd28897f99"
+    },
+    "name": "Social Networks",
+    "thumb": "https://sello-bucket.s3.us-east-1.amazonaws.com/categories/consulting.webp"
   }
+
 ]
 
 
