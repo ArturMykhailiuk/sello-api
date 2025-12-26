@@ -21,6 +21,12 @@ export const settings = {
   n8nBaseUrl: process.env.N8N_BASE_URL || "https://sell-o.shop/n8n",
   n8nAdminKey: process.env.N8N_ADMIN_KEY,
   encryptionKey: process.env.ENCRYPTION_KEY,
+
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+  sessionSecret: process.env.SESSION_SECRET || process.env.TOKEN_SECRET,
 };
 
 const validateSettings = () => {
@@ -34,6 +40,9 @@ const validateSettings = () => {
     "tokenSecret",
     "port",
     "apiURL",
+    "googleClientId",
+    "googleClientSecret",
+    "googleCallbackUrl",
   ];
 
   for (const key of requiredKeys) {

@@ -1,5 +1,6 @@
 import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
 import { authServices } from "../services/authServices.js";
+import { settings } from "../settings.js";
 
 const register = async (req, res) => {
   const { token, user } = await authServices.register(req.body);
@@ -33,9 +34,18 @@ const logout = async (req, res) => {
   res.status(204).send();
 };
 
+const googleCallback = async (req, res) => {
+  const { token, user } = await authServices.googleOAuthCallback(req.user);
+
+  // Redirect to frontend with token
+  const redirectUrl = `${settings.frontendUrl}/auth/google/callback?token=${token}`;
+  res.redirect(redirectUrl);
+};
+
 export const authControllers = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
   currentUser: ctrlWrapper(currentUser),
   logout: ctrlWrapper(logout),
+  googleCallback: ctrlWrapper(googleCallback),
 };

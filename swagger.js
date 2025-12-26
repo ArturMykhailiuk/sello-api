@@ -156,6 +156,51 @@ export const swaggerOptions = {
         },
       },
     },
+    "/api/auth/google": {
+      get: {
+        tags: ["Auth"],
+        summary: "Initiate Google OAuth authentication",
+        description: "Redirects user to Google login page for authentication",
+        responses: {
+          302: {
+            description: "Redirect to Google OAuth",
+          },
+        },
+      },
+    },
+    "/api/auth/google/callback": {
+      get: {
+        tags: ["Auth"],
+        summary: "Google OAuth callback",
+        description: "Handles Google OAuth callback and redirects to frontend with JWT token",
+        parameters: [
+          {
+            name: "code",
+            in: "query",
+            description: "Authorization code from Google",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          302: {
+            description: "Redirect to frontend with token",
+            headers: {
+              Location: {
+                description: "Frontend URL with token parameter",
+                schema: {
+                  type: "string",
+                  example: "http://localhost:5173/auth/google/callback?token=eyJhbGc...",
+                },
+              },
+            },
+          },
+          401: errorResponseOptions,
+        },
+      },
+    },
     "/api/categories": {
       get: {
         tags: ["Categories"],

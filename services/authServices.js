@@ -79,8 +79,30 @@ const logout = async (user) => {
   await User.update({ token: null }, { where: { id: user.id } });
 };
 
+const googleOAuthCallback = async (user) => {
+  const payload = {
+    id: user.id,
+  };
+
+  const token = jwt.sign(payload, { expiresIn: "9h" });
+
+  user.token = token;
+  await user.save();
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatarURL: user.avatarURL,
+    },
+  };
+};
+
 export const authServices = {
   register,
   login,
   logout,
+  googleOAuthCallback,
 };
