@@ -18,7 +18,7 @@ export const settings = {
 
   apiURL: process.env.API_URL,
 
-  n8nBaseUrl: process.env.N8N_BASE_URL || "https://sell-o.shop/n8n",
+  n8nBaseUrl: process.env.N8N_BASE_URL || "https://n8n.sell-o.shop",
   n8nAdminKey: process.env.N8N_ADMIN_KEY,
   encryptionKey: process.env.ENCRYPTION_KEY,
 };
