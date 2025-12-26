@@ -1,0 +1,33 @@
+name: Deploy Backend to Production
+
+on:
+  push:
+    branches:
+      - main
+      - 'Release-v*'  # Деплой з гілок Release-v1.2, Release-v2.0 тощо
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Starting backend deployment..."
+            bash /home/ubuntu/scripts/deploy-backend.sh
+            
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Backend deployed successfully to production!"
+          else
+            echo "❌ Backend deployment failed!"
+          fi
