@@ -3,7 +3,8 @@ name: Deploy Backend to Production
 on:
   push:
     branches:
-      - main  # Змініть на свою гілку якщо потрібно
+      - main
+      - 'Release-v*'  # Деплой з гілок Release-v1.2, Release-v2.0 тощо
 
 jobs:
   deploy:
