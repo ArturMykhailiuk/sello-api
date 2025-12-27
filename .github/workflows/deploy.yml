@@ -20,8 +20,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "Starting backend deployment..."
-            bash /home/ubuntu/scripts/deploy-backend.sh
+            echo "Starting backend deployment from branch: ${{ github.ref_name }}..."
+            bash /home/ubuntu/scripts/deploy-backend.sh "${{ github.ref_name }}"
             
       - name: Notify deployment status
         if: always()
