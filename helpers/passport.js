@@ -3,16 +3,21 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { settings } from "../settings.js";
 import { User } from "../db/models/users.js";
 
-// Configure Google OAuth Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: settings.googleClientId,
-      clientSecret: settings.googleClientSecret,
-      callbackURL: settings.googleCallbackUrl,
-      scope: ["profile", "email"],
-    },
-    async (accessToken, refreshToken, profile, done) => {
+// Configure Google OAuth Strategy only if credentials are available
+if (
+  settings.googleClientId &&
+  settings.googleClientSecret &&
+  settings.googleCallbackUrl
+) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: settings.googleClientId,
+        clientSecret: settings.googleClientSecret,
+        callbackURL: settings.googleCallbackUrl,
+        scope: ["profile", "email"],
+      },
+      async (accessToken, refreshToken, profile, done) => {
       try {
         // Extract user info from Google profile
         const email = profile.emails[0].value;
@@ -57,6 +62,11 @@ passport.use(
     }
   )
 );
+} else {
+  console.warn(
+    "Google OAuth not configured - missing credentials in environment variables"
+  );
+}
 
 // Serialize user for session
 passport.serializeUser((user, done) => {

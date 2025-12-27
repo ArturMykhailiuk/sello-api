@@ -40,9 +40,6 @@ const validateSettings = () => {
     "tokenSecret",
     "port",
     "apiURL",
-    "googleClientId",
-    "googleClientSecret",
-    "googleCallbackUrl",
   ];
 
   for (const key of requiredKeys) {
