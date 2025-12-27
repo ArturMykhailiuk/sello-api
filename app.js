@@ -25,6 +25,7 @@ const staticPath = path.join(process.cwd(), "public");
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/static", express.static(staticPath));
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));

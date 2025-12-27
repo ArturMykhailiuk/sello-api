@@ -21,7 +21,12 @@ export class User extends Model {
         },
         password: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true, // Allow null for OAuth users
+        },
+        googleId: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          unique: true,
         },
         avatarURL: {
           type: DataTypes.STRING,
