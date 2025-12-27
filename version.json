@@ -1,0 +1,7 @@
+{
+  "branch": "Release-v1.2",
+  "commit": "a216215e25b0b7e8037662cabcf534e7d5cbf970",
+  "commitShort": "a216215",
+  "message": "Fix: Make Google OAuth optional",
+  "deployedAt": "2025-12-27T01:47:43Z"
+}
